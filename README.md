@@ -1,4 +1,4 @@
-# TimePreserver
+# Time Preserve
 
 A lightweight Minecraft plugin that **pauses the daylight cycle** when your server is empty.
 
@@ -20,7 +20,7 @@ Keeps your day counter accurate, and prevents time from flying by while nobody i
   # How long (in minutes) the server has to be empty before pausing.
   idleTimeout: 5
     
-  # If you dislike weather, keep this disabled otherwise it will enable it again on you.
+  # If you dislike weather, you should disable this otherwise it will enable it again on you.
   effectWeather: false
   ```
 
