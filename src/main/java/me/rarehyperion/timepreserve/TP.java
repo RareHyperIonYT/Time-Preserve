@@ -19,6 +19,13 @@ public final class TP extends JavaPlugin implements Listener {
     public void onEnable() {
         this.getServer().getPluginManager().registerEvents(this, this);
         this.overworld = this.getOverworld();
+
+        this.saveDefaultConfig();
+
+        if(this.overworld != null) {
+            this.timeMovement(false);
+            this.getLogger().info("Server is inactive, paused time.");
+        }
     }
 
     @Override
@@ -52,7 +59,7 @@ public final class TP extends JavaPlugin implements Listener {
 
     @EventHandler(priority = EventPriority.NORMAL)
     public void onPlayerQuit(final PlayerQuitEvent event) {
-        if(this.getServer().getOnlinePlayers().isEmpty()) {
+        if(this.getServer().getOnlinePlayers().size() <= 1) {
             this.getLogger().info("Server is now inactive, waiting...");
 
             this.task = this.getServer().getScheduler().runTaskLater(this, () -> {

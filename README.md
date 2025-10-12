@@ -21,7 +21,7 @@ Keeps your day counter accurate, and prevents time from flying by while nobody i
   idleTimeout: 5
     
   # If you dislike weather, you should disable this otherwise it will enable it again on you.
-  effectWeather: false
+  effectWeather: true
   ```
 
 </details>

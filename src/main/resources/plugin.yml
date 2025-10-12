@@ -4,3 +4,4 @@ description: "Stops the daylight cycle when no players are online, keeping day c
 version: '0.1.0'
 main: me.rarehyperion.timepreserve.TP
 api-version: '1.13'
+load: POSTWORLD
