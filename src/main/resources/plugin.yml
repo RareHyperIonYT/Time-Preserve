@@ -1,0 +1,6 @@
+name: TimePreserve
+author: RareHyperIon
+description: "Stops the daylight cycle when no players are online, keeping day counters accurate."
+version: '0.1.0'
+main: me.rarehyperion.timepreserve.TP
+api-version: '1.13'

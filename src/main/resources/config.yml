@@ -1,0 +1,5 @@
+# How long (in minutes) the server has to be empty before pausing.
+idleTimeout: 5
+
+# If you dislike weather, keep this disabled otherwise it will enable it again on you.
+effectWeather: false
