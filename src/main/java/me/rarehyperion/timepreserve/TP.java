@@ -1,5 +1,6 @@
 package me.rarehyperion.timepreserve;
 
+import me.rarehyperion.timepreserve.data.ServerState;
 import org.bukkit.GameRule;
 import org.bukkit.World;
 import org.bukkit.event.EventHandler;
@@ -10,10 +11,19 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 
+import java.util.*;
+
 public final class TP extends JavaPlugin implements Listener {
 
     private BukkitTask task = null;
     private World overworld = null;
+
+    private ServerState state;
+
+    @Override
+    public void onLoad() {
+        this.state = ServerState.load(this, this.getDataFolder());
+    }
 
     @Override
     public void onEnable() {
@@ -22,9 +32,10 @@ public final class TP extends JavaPlugin implements Listener {
 
         this.saveDefaultConfig();
 
-        if(this.overworld != null) {
-            this.timeMovement(false);
-            this.getLogger().info("Server is inactive, paused time.");
+        if(this.state.paused && !this.getServer().getOnlinePlayers().isEmpty()) {
+            this.resumeGame();
+        } else if(!this.state.paused && this.getServer().getOnlinePlayers().isEmpty()) {
+            this.pauseGame();
         }
     }
 
@@ -35,6 +46,8 @@ public final class TP extends JavaPlugin implements Listener {
             this.task.cancel();
             this.task = null;
         }
+
+        ServerState.save(this, this.getDataFolder(), this.state);
     }
 
     @EventHandler(priority = EventPriority.NORMAL)
@@ -52,32 +65,17 @@ public final class TP extends JavaPlugin implements Listener {
         }
 
         if(Boolean.FALSE.equals(this.overworld.getGameRuleValue(GameRule.DO_DAYLIGHT_CYCLE))) {
-            this.timeMovement(true);
-            this.getLogger().info("Overworld has been resumed.");
+            this.resumeGame();
         }
     }
 
     @EventHandler(priority = EventPriority.NORMAL)
     public void onPlayerQuit(final PlayerQuitEvent event) {
         if(this.getServer().getOnlinePlayers().size() <= 1) {
-            this.getLogger().info("Server is now inactive, waiting...");
-
             this.task = this.getServer().getScheduler().runTaskLater(this, () -> {
-                if(this.overworld == null) {
-                    this.getLogger().warning("Unable to find an overworld to paused.");
-                    return;
-                }
-
-                if(Boolean.TRUE.equals(this.overworld.getGameRuleValue(GameRule.DO_DAYLIGHT_CYCLE))) {
-                    this.getLogger().warning("Overworld already has paused.");
-                    return;
-                }
-
-               this.timeMovement(false);
-
-                this.getLogger().info("Overworld has been paused.");
+                this.pauseGame();
                 this.task = null;
-            }, this.getConfig().getLong("idleTimeout") * 20 * 60);
+            }, this.getConfig().getLong("idleTimeout", 5L) * 20 * 60);
         }
     }
 
@@ -88,12 +86,56 @@ public final class TP extends JavaPlugin implements Listener {
                 .orElse(null);
     }
 
-    private void timeMovement(final boolean shouldMove) {
-        this.overworld.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, shouldMove);
-
-        if (getConfig().getBoolean("effectWeather")) {
-            this.overworld.setGameRule(GameRule.DO_WEATHER_CYCLE, shouldMove);
+    private void pauseGame() {
+        if(this.state.paused) {
+            this.getLogger().warning("Overworld already has been paused.");
+            return;
         }
+
+        if(this.overworld == null) {
+            this.getLogger().warning("Unable to find an overworld to pause.");
+            return;
+        }
+
+        this.getLogger().info("Server is inactive, pausing...");
+
+        if(this.getConfig().getBoolean("pauseWeather", true)) {
+            this.state.saved.put("DO_WEATHER_CYCLE", this.overworld.getGameRuleValue(GameRule.DO_WEATHER_CYCLE));
+            this.overworld.setGameRule(GameRule.DO_WEATHER_CYCLE, false);
+        }
+
+        if(this.getConfig().getBoolean("pauseDaylight", true)) {
+            this.state.saved.put("DO_DAYLIGHT_CYCLE", this.overworld.getGameRuleValue(GameRule.DO_DAYLIGHT_CYCLE));
+            this.overworld.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, false);
+        }
+
+        this.state.paused = true;
+    }
+
+    private void resumeGame() {
+        if(!this.state.paused) {
+            this.getLogger().warning("Overworld already has been resumed.");
+            return;
+        }
+
+        if(this.overworld == null) {
+            this.getLogger().warning("Unable to find an overworld to resume.");
+            return;
+        }
+
+        this.getLogger().info("Server is no longer inactive, resuming...");
+
+        final Map<String, Object> saved = this.state.saved;
+
+        if(this.getConfig().getBoolean("pauseWeather", true)) {
+            this.overworld.setGameRule(GameRule.DO_WEATHER_CYCLE, (boolean) saved.getOrDefault("DO_WEATHER_CYCLE", true));
+        }
+
+        if(this.getConfig().getBoolean("pauseDaylight", true)) {
+            this.overworld.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, (boolean) saved.getOrDefault("DO_DAYLIGHT_CYCLE", true));
+        }
+
+        this.state.paused = false;
     }
 
 }

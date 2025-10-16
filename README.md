@@ -9,7 +9,6 @@ Keeps your day counter accurate, and prevents time from flying by while nobody i
 - Automatically pauses `doDaylightCycle` whenever the server is inactive.
 - Automatically pauses `doWeatherCycle` whenever the server is inactive.
 - Restores time progression whenever a player rejoins the server.
-- Only pauses time and weather. Tick speed, and farming are unaffected.
 
 ## Configuration
 
