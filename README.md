@@ -19,8 +19,9 @@ Keeps your day counter accurate, and prevents time from flying by while nobody i
   # How long (in minutes) the server has to be empty before pausing.
   idleTimeout: 5
     
-  # If you dislike weather, you should disable this otherwise it will enable it again on you.
-  effectWeather: true
+  # What should be paused when the server is inactive:
+  pauseWeather: true  # Stops weather changes
+  pauseDaylight: true # Stops day/night progression.
   ```
 
 </details>
